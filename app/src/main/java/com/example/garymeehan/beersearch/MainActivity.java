@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,6 +16,13 @@ import android.widget.ListView;
 import android.widget.ShareActionProvider;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 
@@ -30,10 +38,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     SharedPreferences mSharedPreferences;
     ShareActionProvider mShareActionProvider;
     ProgressDialog mDialog;
-
     //welcome variables
     private static final String PREFS = "prefs";
     private static final String PREF_NAME = "name";
+
+    //Query Variables
+    private static final String QUERY_URL = "http://api.brewerydb.com/v2/search/?key=274b296b2dcfa366021a438566bcff44&format=json&q=";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +89,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //Click listener
     @Override
     public void onClick(View v) {
-
+        queryBeer(mainEditText.getText().toString());
     }
 
     public void displayWelcome() {
@@ -129,5 +139,46 @@ public class MainActivity extends Activity implements View.OnClickListener {
             alert.show();
         }
     }//end welcome
+
+    //query
+    private void queryBeer(String searchString) {
+        String urlString = "";
+        try {
+            urlString = URLEncoder.encode(searchString, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            //Display out error if setting string fails
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        // Create client
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        // Have the client get a JSONArray of data
+        // and define how to respond
+        client.get(QUERY_URL + urlString,
+                new JsonHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(JSONObject jsonObject) {
+                        //show success
+                        Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_LONG).show();
+
+                        //test
+                        Log.d("val", jsonObject.toString());
+
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Throwable throwable, JSONObject error) {
+                        //show failure
+                        Toast.makeText(getApplicationContext(), "Error: " + statusCode + " " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+
+                        // Log error message
+                        Log.e("Query Error", statusCode + " " + throwable.getMessage());
+
+                    }
+                });
+    }
 
 }
