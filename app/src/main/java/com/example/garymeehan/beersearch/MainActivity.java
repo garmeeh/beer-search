@@ -3,6 +3,7 @@ package com.example.garymeehan.beersearch;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -10,6 +11,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -34,6 +37,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     EditText mainEditText;
     //list view
     ListView mainListView;
+    JSONAdapter mJSONAdapter;
     ArrayList mBeerList = new ArrayList();
     SharedPreferences mSharedPreferences;
     ShareActionProvider mShareActionProvider;
@@ -41,6 +45,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //welcome variables
     private static final String PREFS = "prefs";
     private static final String PREF_NAME = "name";
+
+    ArrayAdapter mArrayAdapter;
+
 
     //Query Variables
     private static final String QUERY_URL = "http://api.brewerydb.com/v2/search/?key=274b296b2dcfa366021a438566bcff44&format=json&q=";
@@ -60,6 +67,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         //access list view
         mainListView = (ListView) findViewById(R.id.main_listview);
+
+        mainListView.setAdapter(mArrayAdapter);
+        mJSONAdapter = new JSONAdapter(this, getLayoutInflater());
+        mainListView.setAdapter(mJSONAdapter);
 
         displayWelcome();
     }
@@ -90,6 +101,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         queryBeer(mainEditText.getText().toString());
+        InputMethodManager inputManager = (InputMethodManager)
+                getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     public void displayWelcome() {
@@ -165,8 +181,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         Toast.makeText(getApplicationContext(), "Success!", Toast.LENGTH_LONG).show();
 
                         //test
-                        Log.d("val", jsonObject.toString());
+//                        Log.d("val", jsonObject.toString());
 
+                        mJSONAdapter.updateData(jsonObject.optJSONArray("data"));
                     }
 
                     @Override
