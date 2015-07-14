@@ -103,19 +103,27 @@ public class JSONAdapter extends BaseAdapter{
 
         // Grab the title and author from the JSON
         String beerName = "";
-        String beerOrangic = "";
+        String beerOrg = "";
 
         if (jsonObject.has("name")) {
             beerName = jsonObject.optString("name");
         }
 
-        if (jsonObject.has("organic")) {
-            beerOrangic = jsonObject.optString("organic");
+        if (jsonObject.has("isOrganic")) {
+
+            String orgCheck = jsonObject.optString("isOrganic");
+
+            if(orgCheck.equals("N")){
+                beerOrg = "Not Organic";
+            }else{
+                beerOrg = "Organic";
+            }
+            Log.d("Organic", beerOrg);
         }
 
         // Send these Strings to the TextViews for display
         holder.nameTextView.setText(beerName);
-        holder.organicTextView.setText(beerOrangic);
+        holder.organicTextView.setText(beerOrg);
 
         return convertView;
     }
